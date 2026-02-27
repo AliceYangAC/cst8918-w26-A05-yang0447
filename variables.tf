@@ -1,7 +1,7 @@
 variable "labelPrefix" {
   description = "Your college username. This will form the beginning of various resource names."
   type        = string
-  default     = "yang0447"
+  #   default     = "yang0447"
 }
 
 variable "region" {
@@ -13,5 +13,5 @@ variable "region" {
 variable "admin_username" {
   description = "Admin username for VMs"
   type        = string
-  default    = "azureadmin"
+  default     = "azureadmin"
 }
