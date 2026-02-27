@@ -27,7 +27,7 @@ provider "cloudinit" {
 
 # define the rg using the variables we defined
 resource "azurerm_resource_group" "main" {
-  name     = "${var.labelPrefix}-A05-RG"
+  name     = "${var.labelPrefix}-A05-rg"
   location = var.region
 }
 
