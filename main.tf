@@ -37,8 +37,8 @@ resource "azurerm_public_ip" "vm_pip" {
   location            = var.region
   resource_group_name = azurerm_resource_group.main.name
 
-  allocation_method   = "Dynamic"
-  sku                 = "Basic"
+  allocation_method   = "Static"
+  sku                 = "Standard"
 }
 
 # define the vnet in range 10.0.0.0/16
@@ -151,7 +151,7 @@ resource "azurerm_linux_virtual_machine" "web_vm" {
     version   = "latest"
   }
 
-  custom_data = cloudinit_config.apache_init.rendered
+  custom_data = base64encode(cloudinit_config.apache_init.rendered)
 }
 
 # output the resource group name
