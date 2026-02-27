@@ -33,7 +33,7 @@ resource "azurerm_resource_group" "main" {
 
 # define the public ip
 resource "azurerm_public_ip" "vm_pip" {
-  name                = "${var.labelPrefix}-A05-PIP"
+  name                = "${var.labelPrefix}-A05-pip"
   location            = var.region
   resource_group_name = azurerm_resource_group.main.name
 
@@ -43,7 +43,7 @@ resource "azurerm_public_ip" "vm_pip" {
 
 # define the vnet in range 10.0.0.0/16
 resource "azurerm_virtual_network" "main_vnet" {
-  name                = "${var.labelPrefix}-A05-VNET"
+  name                = "${var.labelPrefix}-A05-vnet"
   address_space       = ["10.0.0.0/16"]
   location            = var.region
   resource_group_name = azurerm_resource_group.main.name
@@ -51,7 +51,7 @@ resource "azurerm_virtual_network" "main_vnet" {
 
 # define the subnet w range 10.0.1.0/24
 resource "azurerm_subnet" "main_subnet" {
-  name                 = "${var.labelPrefix}-A05-SUBNET"
+  name                 = "${var.labelPrefix}-A05-subnet"
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.main_vnet.name
   address_prefixes     = ["10.0.1.0/24"]
@@ -59,7 +59,7 @@ resource "azurerm_subnet" "main_subnet" {
 
 # define nsgs for ssh and http
 resource "azurerm_network_security_group" "main_nsg" {
-  name                = "${var.labelPrefix}-A05-NSG"
+  name                = "${var.labelPrefix}-A05-nsg"
   location            = var.region
   resource_group_name = azurerm_resource_group.main.name
 
@@ -90,7 +90,7 @@ resource "azurerm_network_security_group" "main_nsg" {
 
 # define nic & associate w pip and subnet
 resource "azurerm_network_interface" "main_nic" {
-  name                = "${var.labelPrefix}-A05-NIC"
+  name                = "${var.labelPrefix}-A05-nic"
   location            = var.region
   resource_group_name = azurerm_resource_group.main.name
 
@@ -122,7 +122,7 @@ resource "cloudinit_config" "apache_init" {
 
 # define latest ubuntu linux vm
 resource "azurerm_linux_virtual_machine" "web_vm" {
-  name                = "${var.labelPrefix}-A05-VM"
+  name                = "${var.labelPrefix}-A05-vm"
   resource_group_name = azurerm_resource_group.main.name
   location            = var.region
   size                = "Standard_B1s"
@@ -139,7 +139,7 @@ resource "azurerm_linux_virtual_machine" "web_vm" {
   }
 
   os_disk {
-    name                 = "${var.labelPrefix}-A05-OSDISK"
+    name                 = "${var.labelPrefix}-A05-osdisk"
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
   }
