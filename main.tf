@@ -108,7 +108,7 @@ resource "azurerm_network_interface_security_group_association" "nic_nsg" {
   network_security_group_id = azurerm_network_security_group.main_nsg.id
 }
 
-resource "cloudinit_config" "apache_init" {
+data "cloudinit_config" "apache_init" {
   gzip          = false
   base64_encode = false
 
@@ -151,7 +151,7 @@ resource "azurerm_linux_virtual_machine" "web_vm" {
     version   = "latest"
   }
 
-  custom_data = base64encode(cloudinit_config.apache_init.rendered)
+  custom_data = base64encode(data.cloudinit_config.apache_init.rendered)
 }
 
 # output the resource group name
