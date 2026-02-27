@@ -44,7 +44,7 @@ resource "azurerm_public_ip" "vm_pip" {
 # define the vnet in range 10.0.0.0/16
 resource "azurerm_virtual_network" "main_vnet" {
   name                = "${var.labelPrefix}-A05-VNET"
-  address_space = ["10.0.0.0/16"]
+  address_space       = ["10.0.0.0/16"]
   location            = var.region
   resource_group_name = azurerm_resource_group.main.name
 }
@@ -54,8 +54,7 @@ resource "azurerm_subnet" "main_subnet" {
   name                 = "${var.labelPrefix}-A05-SUBNET"
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.main_vnet.name
-
-  address_prefixes = ["10.0.1.0/24"]
+  address_prefixes     = ["10.0.1.0/24"]
 }
 
 # define nsgs for ssh and http
@@ -87,4 +86,80 @@ resource "azurerm_network_security_group" "main_nsg" {
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
+}
+
+# define nic & associate w pip and subnet
+resource "azurerm_network_interface" "main_nic" {
+  name                = "${var.labelPrefix}-A05-NIC"
+  location            = var.region
+  resource_group_name = azurerm_resource_group.main.name
+
+  ip_configuration {
+    name                          = "internal"
+    subnet_id                     = azurerm_subnet.main_subnet.id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = azurerm_public_ip.vm_pip.id
+  }
+}
+
+# associate nsg w nic
+resource "azurerm_network_interface_security_group_association" "nic_nsg" {
+  network_interface_id      = azurerm_network_interface.main_nic.id
+  network_security_group_id = azurerm_network_security_group.main_nsg.id
+}
+
+resource "cloudinit_config" "apache_init" {
+  gzip          = false
+  base64_encode = false
+
+  part {
+    filename     = "init.sh"
+    content_type = "text/x-shellscript"
+
+    content = file("${path.module}/init.sh")
+  }
+}
+
+# define latest ubuntu linux vm
+resource "azurerm_linux_virtual_machine" "web_vm" {
+  name                = "${var.labelPrefix}-A05-VM"
+  resource_group_name = azurerm_resource_group.main.name
+  location            = var.region
+  size                = "Standard_B1s"
+
+  admin_username = var.admin_username
+
+  network_interface_ids = [
+    azurerm_network_interface.main_nic.id
+  ]
+
+  admin_ssh_key {
+    username   = var.admin_username
+    public_key = file("~/.ssh/id_rsa.pub")
+  }
+
+  os_disk {
+    name                 = "${var.labelPrefix}-A05-OSDISK"
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "0001-com-ubuntu-server-jammy"
+    sku       = "22_04-lts"
+    version   = "latest"
+  }
+
+  custom_data = cloudinit_config.apache_init.rendered
+}
+
+# output the resource group name
+output "resource_group_name" {
+  value = azurerm_resource_group.main.name
+}
+
+# output the public ip address of the vm
+output "public_ip_address" {
+  value = azurerm_public_ip.vm_pip.ip_address
 }
